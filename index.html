@@ -8,8 +8,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root{
-  --navy:#141a2e;
-  --navy-deep:#0b0f1c;
+  --navy:#20294a;
+  --navy-deep:#12182c;
   --gold:#d9a94e;
   --gold-bright:#f5cf6f;
   --glass-teal:#2ab7c9;
@@ -21,7 +21,7 @@
 }
 
 *{box-sizing:border-box; image-rendering:pixelated; image-rendering:crisp-edges;}
-html,body{margin:0;padding:0;height:100%;background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;color:var(--ivory);}
+html,body{margin:0;padding:0;height:100%;background:#12182c;overflow:hidden;font-family:'Press Start 2P',monospace;color:var(--ivory);}
 canvas{image-rendering:pixelated;}
 button{font-family:'Press Start 2P',monospace;}
 
@@ -54,25 +54,25 @@ button{font-family:'Press Start 2P',monospace;}
 .wall{
   position:absolute;inset:0;
   background-image:
-    repeating-linear-gradient(0deg, #1c2440 0 38px, #171d36 38px 40px),
-    repeating-linear-gradient(90deg, rgba(0,0,0,0.15) 0 60px, transparent 60px 120px);
-  opacity:0.9;
+    repeating-linear-gradient(0deg, #2a345d 0 38px, #20294c 38px 40px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.09) 0 60px, transparent 60px 120px);
+  opacity:0.96;
 }
 .wall::before{
   content:"";position:absolute;inset:0;
-  background-image:repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 60px);
+  background-image:repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 60px);
 }
 
 /* floor */
 .floor{
   position:absolute;left:0;right:0;bottom:0;height:38%;
-  background:linear-gradient(var(--wood-dark), #150c05);
-  background-image:repeating-linear-gradient(100deg, rgba(0,0,0,0.25) 0 3px, transparent 3px 40px);
+  background:linear-gradient(#362214, #1f1209);
+  background-image:repeating-linear-gradient(100deg, rgba(0,0,0,0.16) 0 3px, transparent 3px 40px);
 }
 
 /* day/night overlay */
 .night-overlay{
-  position:absolute;inset:0;background:rgba(20,30,90,0.38);mix-blend-mode:multiply;
+  position:absolute;inset:0;background:rgba(20,30,90,0.26);mix-blend-mode:multiply;
   opacity:0;transition:opacity 1.2s;pointer-events:none;z-index:40;
 }
 .night-overlay.on{opacity:1;}
@@ -80,17 +80,17 @@ button{font-family:'Press Start 2P',monospace;}
 /* CRT + vignette overlays */
 .crt-overlay{
   position:absolute;inset:0;pointer-events:none;z-index:90;
-  background:repeating-linear-gradient(0deg, rgba(0,0,0,0.28) 0px, rgba(0,0,0,0.28) 1px, transparent 2px, transparent 4px);
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,0.16) 0px, rgba(0,0,0,0.16) 1px, transparent 2px, transparent 4px);
   mix-blend-mode:multiply;
 }
 .vignette{
   position:absolute;inset:0;pointer-events:none;z-index:91;
-  background:radial-gradient(ellipse at center, transparent 45%, rgba(10,5,20,0.55) 78%, rgba(5,2,10,0.85) 100%);
-  box-shadow:inset 0 0 120px 40px rgba(80,30,60,0.15);
+  background:radial-gradient(ellipse at center, transparent 52%, rgba(10,5,20,0.26) 80%, rgba(5,2,10,0.5) 100%);
+  box-shadow:inset 0 0 90px 24px rgba(80,30,60,0.1);
 }
 .vhs-glow{
   position:absolute;inset:0;pointer-events:none;z-index:89;
-  background:radial-gradient(ellipse at center, rgba(255,220,180,0.05), transparent 60%);
+  background:radial-gradient(ellipse at center, rgba(255,225,190,0.12), transparent 62%);
   filter:blur(2px);
 }
 
@@ -113,13 +113,13 @@ button{font-family:'Press Start 2P',monospace;}
 .altar-wrap{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);width:46%;max-width:520px;text-align:center;z-index:20;}
 .altar{
   position:relative;width:100%;height:120px;background:linear-gradient(var(--wood) 0%, var(--wood-dark) 100%);
-  border:4px solid #221407;box-shadow:0 8px 0 #0c0603, inset 0 0 0 3px rgba(217,169,78,0.15);
+  border:4px solid #2e1b0b;box-shadow:0 8px 0 #140b05, inset 0 0 0 3px rgba(217,169,78,0.22);
 }
 .altar-carving{
   position:absolute;inset:8px;background-image:
-    repeating-linear-gradient(45deg, rgba(217,169,78,0.12) 0 6px, transparent 6px 20px),
-    repeating-linear-gradient(-45deg, rgba(217,169,78,0.10) 0 6px, transparent 6px 20px);
-  border:2px solid rgba(217,169,78,0.25);
+    repeating-linear-gradient(45deg, rgba(217,169,78,0.18) 0 6px, transparent 6px 20px),
+    repeating-linear-gradient(-45deg, rgba(217,169,78,0.15) 0 6px, transparent 6px 20px);
+  border:2px solid rgba(217,169,78,0.35);
 }
 .altar-top{
   position:absolute;left:-6%;right:-6%;top:-14px;height:14px;background:var(--wood);
@@ -276,6 +276,13 @@ button{font-family:'Press Start 2P',monospace;}
     flex-wrap:nowrap;justify-content:flex-start;gap:6px;
     overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
     padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  .crt-overlay{
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px, transparent 2px, transparent 4px);
+  }
+  .vignette{
+    background:radial-gradient(ellipse at center, transparent 58%, rgba(10,5,20,0.18) 82%, rgba(5,2,10,0.36) 100%);
+    box-shadow:inset 0 0 64px 16px rgba(80,30,60,0.08);
   }
   .ui-panel::-webkit-scrollbar{display:none;}
   .pbtn{flex:0 0 auto;padding:7px 8px;font-size:7px;white-space:nowrap;}
