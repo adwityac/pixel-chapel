@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pixel Chapel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root{
+  --navy:#141a2e;
+  --navy-deep:#0b0f1c;
+  --gold:#d9a94e;
+  --gold-bright:#f5cf6f;
+  --glass-teal:#2ab7c9;
+  --glass-rose:#c9557a;
+  --glass-gold:#e0b657;
+  --wood:#3d2718;
+  --wood-dark:#241609;
+  --ivory:#efe4c8;
+}
+
+*{box-sizing:border-box; image-rendering:pixelated; image-rendering:crisp-edges;}
+html,body{margin:0;padding:0;height:100%;background:#000;overflow:hidden;font-family:'Press Start 2P',monospace;color:var(--ivory);}
+canvas{image-rendering:pixelated;}
+button{font-family:'Press Start 2P',monospace;}
+
+/* ---------- ENTRY SCREEN ---------- */
+#entry{
+  position:fixed;inset:0;background:#000;color:var(--gold);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;z-index:1000;text-align:center;
+}
+#entry .title{font-size:22px;line-height:2.4;text-shadow:0 0 8px var(--gold);}
+#entry .sub{font-size:11px;margin-top:30px;color:var(--glass-teal);animation:blink 1.2s steps(2) infinite;}
+#entry::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0.35) 0px,rgba(0,0,0,0.35) 1px,transparent 2px,transparent 3px);
+}
+@keyframes blink{50%{opacity:0;}}
+
+/* ---------- CHAPEL ROOT ---------- */
+#chapel{position:fixed;inset:0;background:var(--navy-deep);overflow:hidden;}
+#chapel.hidden{display:none;}
+
+.scene{
+  position:absolute;inset:0;
+  background:
+    linear-gradient(var(--navy) 0%, var(--navy-deep) 100%);
+  overflow:hidden;
+}
+
+/* stone wall texture */
+.wall{
+  position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, #1c2440 0 38px, #171d36 38px 40px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.15) 0 60px, transparent 60px 120px);
+  opacity:0.9;
+}
+.wall::before{
+  content:"";position:absolute;inset:0;
+  background-image:repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 60px);
+}
+
+/* floor */
+.floor{
+  position:absolute;left:0;right:0;bottom:0;height:38%;
+  background:linear-gradient(var(--wood-dark), #150c05);
+  background-image:repeating-linear-gradient(100deg, rgba(0,0,0,0.25) 0 3px, transparent 3px 40px);
+}
+
+/* day/night overlay */
+.night-overlay{
+  position:absolute;inset:0;background:rgba(20,30,90,0.38);mix-blend-mode:multiply;
+  opacity:0;transition:opacity 1.2s;pointer-events:none;z-index:40;
+}
+.night-overlay.on{opacity:1;}
+
+/* CRT + vignette overlays */
+.crt-overlay{
+  position:absolute;inset:0;pointer-events:none;z-index:90;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,0.28) 0px, rgba(0,0,0,0.28) 1px, transparent 2px, transparent 4px);
+  mix-blend-mode:multiply;
+}
+.vignette{
+  position:absolute;inset:0;pointer-events:none;z-index:91;
+  background:radial-gradient(ellipse at center, transparent 45%, rgba(10,5,20,0.55) 78%, rgba(5,2,10,0.85) 100%);
+  box-shadow:inset 0 0 120px 40px rgba(80,30,60,0.15);
+}
+.vhs-glow{
+  position:absolute;inset:0;pointer-events:none;z-index:89;
+  background:radial-gradient(ellipse at center, rgba(255,220,180,0.05), transparent 60%);
+  filter:blur(2px);
+}
+
+/* windows */
+.window{position:absolute;top:6%;width:15%;max-width:150px;filter:drop-shadow(0 0 14px rgba(80,180,200,0.35));}
+.window-left{left:8%;}
+.window-right{right:8%;}
+.shimmer{animation:shimmer 3.2s ease-in-out infinite;}
+@keyframes shimmer{0%,100%{opacity:1;}50%{opacity:0.72;}}
+
+/* pews, forced perspective */
+.pews{position:absolute;bottom:0;height:34%;width:34%;}
+.pews-left{left:0;}
+.pews-right{right:0;transform:scaleX(-1);}
+.pew-row{position:absolute;bottom:0;left:0;height:40px;background:linear-gradient(var(--wood), var(--wood-dark));
+  border-top:3px solid #5a3a20;box-shadow:0 3px 0 #150c05;}
+.pew-row::before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px;background:var(--wood);border-top:3px solid #5a3a20;}
+
+/* altar area */
+.altar-wrap{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);width:46%;max-width:520px;text-align:center;z-index:20;}
+.altar{
+  position:relative;width:100%;height:120px;background:linear-gradient(var(--wood) 0%, var(--wood-dark) 100%);
+  border:4px solid #221407;box-shadow:0 8px 0 #0c0603, inset 0 0 0 3px rgba(217,169,78,0.15);
+}
+.altar-carving{
+  position:absolute;inset:8px;background-image:
+    repeating-linear-gradient(45deg, rgba(217,169,78,0.12) 0 6px, transparent 6px 20px),
+    repeating-linear-gradient(-45deg, rgba(217,169,78,0.10) 0 6px, transparent 6px 20px);
+  border:2px solid rgba(217,169,78,0.25);
+}
+.altar-top{
+  position:absolute;left:-6%;right:-6%;top:-14px;height:14px;background:var(--wood);
+  border-top:3px solid #5a3a20;box-shadow:0 3px 0 #150c05;
+}
+
+.candles-row{position:absolute;top:-54px;left:0;right:0;height:58px;display:flex;align-items:flex-end;justify-content:center;gap:6px;pointer-events:none;z-index:18;}
+.candle-slot{width:26px;height:50px;position:relative;}
+.candle-slot canvas{position:absolute;bottom:0;left:0;}
+
+.bible-wrap{position:absolute;top:-58px;left:50%;transform:translateX(-50%);width:70px;height:26px;}
+.bible-wrap canvas{width:100%;height:100%;}
+
+.jesus-wrap{position:absolute;top:-190px;left:50%;transform:translateX(-50%);width:170px;height:170px;z-index:15;}
+.jesus-wrap img{
+  width:100%;height:100%;display:block;object-fit:cover;
+  image-rendering:pixelated;image-rendering:crisp-edges;
+  filter:drop-shadow(0 4px 0 rgba(0,0,0,0.45)) drop-shadow(0 0 12px rgba(245,207,111,0.25));
+}
+.halo{position:absolute;top:4px;left:50%;width:56px;height:56px;transform:translateX(-50%);z-index:14;
+  background:conic-gradient(var(--gold-bright),var(--gold),var(--gold-bright),var(--gold),var(--gold-bright));
+  border-radius:50%;filter:blur(0.4px);animation:halorotate 6s linear infinite, haloglow 2.4s ease-in-out infinite;
+  clip-path:circle(50% at 50% 50%);
+  mask:radial-gradient(circle, black 55%, transparent 62%, black 68%, transparent 76%);
+  -webkit-mask:radial-gradient(circle, black 55%, transparent 62%, black 68%, transparent 76%);
+}
+@keyframes halorotate{to{transform:translateX(-50%) rotate(360deg);}}
+@keyframes haloglow{0%,100%{filter:drop-shadow(0 0 4px var(--gold)) blur(0.4px);}50%{filter:drop-shadow(0 0 12px var(--gold-bright)) blur(0.4px);}}
+
+.decor-flower{position:absolute;bottom:-4px;width:20px;height:26px;}
+.decor-flower.left{left:-30px;}
+.decor-flower.right{right:-30px;}
+.decor-cross{
+  position:absolute;top:-270px;left:50%;transform:translateX(-50%);
+  width:52px;height:132px;z-index:17;
+  filter:
+    drop-shadow(0 0 0 #080b14)
+    drop-shadow(3px 0 0 #080b14)
+    drop-shadow(-3px 0 0 #080b14)
+    drop-shadow(0 3px 0 #080b14)
+    drop-shadow(0 -3px 0 #080b14)
+    drop-shadow(0 0 10px rgba(245,207,111,0.55));
+}
+.decor-icon{position:absolute;bottom:14px;left:14px;width:34px;height:40px;}
+.decor-garland{position:absolute;top:-16px;left:-4%;right:-4%;height:16px;}
+.stars-wrap{position:absolute;top:-40px;left:-6%;right:-6%;height:24px;pointer-events:none;}
+.star{position:absolute;width:12px;height:12px;animation:starshimmer 1.6s ease-in-out infinite;}
+@keyframes starshimmer{0%,100%{opacity:0.4;transform:scale(0.85);}50%{opacity:1;transform:scale(1.15);}}
+
+/* holy water font */
+.holy-font{position:absolute;left:14%;bottom:12%;width:70px;height:110px;cursor:pointer;z-index:19;}
+.holy-font canvas{width:100%;height:100%;}
+.holy-font:hover{filter:brightness(1.2);}
+.particle{position:absolute;width:4px;height:4px;background:#bfe9ff;box-shadow:0 0 4px #bfe9ff;pointer-events:none;z-index:25;}
+
+/* gold dust */
+.dust-layer{position:absolute;inset:0;pointer-events:none;z-index:12;}
+.dust{position:absolute;width:2px;height:2px;background:var(--gold-bright);opacity:0.7;animation:dustrise linear infinite;}
+@keyframes dustrise{
+  0%{transform:translateY(0);opacity:0;}
+  10%{opacity:0.8;}
+  90%{opacity:0.5;}
+  100%{transform:translateY(-100vh);opacity:0;}
+}
+
+/* birds */
+.bird{position:absolute;width:16px;height:10px;z-index:13;animation:birdfly linear forwards;}
+@keyframes birdfly{from{transform:translateX(-40px);}to{transform:translateX(110vw);}}
+
+/* ---------- VERSE BOX ---------- */
+.verse-box{
+  position:absolute;top:18px;left:50%;transform:translateX(-50%);width:min(560px,86%);
+  background:var(--navy-deep);border:3px solid var(--gold);padding:14px 18px;font-size:11px;line-height:1.9;
+  z-index:60;cursor:pointer;box-shadow:0 0 0 2px #000, 0 6px 0 rgba(0,0,0,0.5);
+}
+.verse-box .label{color:var(--glass-teal);font-size:10px;margin-bottom:8px;}
+.verse-box .dismiss-hint{position:absolute;bottom:4px;right:8px;font-size:8px;color:var(--gold);opacity:0.7;}
+
+/* ---------- UI PANEL ---------- */
+.ui-panel{
+  position:absolute;left:0;right:0;bottom:0;z-index:70;
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;
+  padding:10px;background:linear-gradient(rgba(11,15,28,0) 0%, rgba(11,15,28,0.92) 30%);
+}
+.pbtn{
+  background:var(--navy);color:var(--gold);border:3px solid var(--gold);padding:8px 10px;
+  font-size:9px;cursor:pointer;box-shadow:0 3px 0 #000;
+}
+.pbtn .btn-icon{display:inline-block;transform:translateY(-2px);margin-right:6px;}
+.pbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #000;}
+.pbtn.active{background:var(--gold);color:var(--navy-deep);}
+.pbtn.small{font-size:14px;padding:6px 10px;}
+.count-badge{font-size:9px;color:var(--ivory);}
+.youtube-audio{
+  position:fixed;left:-2px;bottom:-2px;width:1px;height:1px;
+  opacity:0;pointer-events:none;overflow:hidden;
+}
+
+/* ---------- JOURNAL ---------- */
+.journal-panel{
+  position:absolute;right:16px;bottom:74px;width:280px;z-index:80;
+  background:var(--navy-deep);border:4px solid var(--gold);padding:14px;
+  box-shadow:0 0 0 2px #000, 0 6px 0 rgba(0,0,0,0.5);
+}
+.journal-panel h3{margin:0 0 8px;font-size:10px;color:var(--glass-teal);}
+.journal-panel textarea{
+  width:100%;height:60px;background:#0d1120;color:var(--ivory);border:2px solid var(--gold);
+  font-family:'Press Start 2P',monospace;font-size:8px;padding:6px;resize:none;
+}
+.journal-panel .save-btn{margin-top:8px;width:100%;}
+.journal-panel .clear-btn{margin-top:6px;width:100%;color:var(--glass-rose);border-color:var(--glass-rose);}
+.prayer-item{font-size:8px;border-top:1px dashed rgba(217,169,78,0.4);padding:6px 0;line-height:1.6;color:#cfd7ea;}
+.journal-note{font-size:7px;color:#8b93ab;margin-top:6px;line-height:1.6;}
+
+/* ---------- POLAROID ---------- */
+.polaroid-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:center;justify-content:center;}
+.polaroid{
+  background:var(--ivory);padding:14px 14px 40px;transform:rotate(-4deg);
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+}
+.polaroid img{display:block;width:340px;image-rendering:pixelated;border:1px solid #888;}
+.polaroid .stamp{margin-top:10px;font-size:9px;color:#333;text-align:center;}
+.polaroid-actions{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:10px;}
+</style>
+</head>
+<body>
+
+<div id="entry">
+  <div class="title">PIXEL CHAPEL</div>
+  <div class="sub">CLICK TO ENTER</div>
+</div>
+
+<div id="chapel" class="hidden">
+  <div class="scene" id="scene">
+    <div class="wall"></div>
+    <div class="floor"></div>
+
+    <div class="window window-left shimmer" id="winLeft"></div>
+    <div class="window window-right shimmer" id="winRight"></div>
+
+    <div class="pews pews-left" id="pewsLeft"></div>
+    <div class="pews pews-right" id="pewsRight"></div>
+
+    <div class="holy-font" id="holyFont"><canvas id="fontCanvas" width="35" height="55"></canvas></div>
+
+    <div class="altar-wrap">
+      <div class="altar">
+        <div class="altar-top"></div>
+        <div class="altar-carving"></div>
+
+        <div class="jesus-wrap">
+          <img id="jesusImage" src="jesus-icon.jpg" alt="">
+        </div>
+
+        <div class="candles-row" id="candlesRow"></div>
+        <div class="bible-wrap"><canvas id="bibleCanvas" width="70" height="26"></canvas></div>
+
+        <div id="decorCross" class="decor-cross" style="display:none;"><canvas width="20" height="55"></canvas></div>
+        <div id="decorIcon" class="decor-icon" style="display:none;"><canvas width="17" height="20"></canvas></div>
+        <div id="decorGarland" class="decor-garland" style="display:none;"><canvas width="200" height="16"></canvas></div>
+        <div id="decorFlowerL" class="decor-flower left" style="display:none;"><canvas width="10" height="13"></canvas></div>
+        <div id="decorFlowerR" class="decor-flower right" style="display:none;"><canvas width="10" height="13"></canvas></div>
+        <div id="starsWrap" class="stars-wrap" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="dust-layer" id="dustLayer"></div>
+    <div class="night-overlay" id="nightOverlay"></div>
+  </div>
+
+  <div class="crt-overlay"></div>
+  <div class="vhs-glow"></div>
+  <div class="vignette"></div>
+
+  <div class="verse-box" id="verseBox">
+    <div class="label">✝ VERSE OF THE DAY</div>
+    <div id="verseText"></div>
+    <div class="dismiss-hint">CLICK TO DISMISS</div>
+  </div>
+
+  <div class="journal-panel" id="journalPanel" style="display:none;">
+    <h3>PRAYER JOURNAL</h3>
+    <textarea id="journalInput" placeholder="Write a prayer..."></textarea>
+    <button class="pbtn save-btn" id="journalSave">SAVE</button>
+    <button class="pbtn clear-btn" id="journalClear">CLEAR ALL</button>
+    <div id="prayerList"></div>
+  </div>
+
+  <div class="ui-panel">
+    <button class="pbtn" id="lightBtn"><span class="btn-icon">🕯</span>LIGHT</button>
+    <button class="pbtn" id="snuffBtn">SNUFF</button>
+    <span class="count-badge" id="candleCount">0 / 8</span>
+    <button class="pbtn" id="toggleFlowers"><span class="btn-icon">🌸</span>FLOWERS</button>
+    <button class="pbtn" id="toggleCross"><span class="btn-icon">✝</span>CROSS</button>
+    <button class="pbtn" id="toggleIcon"><span class="btn-icon">🖼</span>ICON</button>
+    <button class="pbtn" id="toggleGarland"><span class="btn-icon">⭐</span>GARLAND</button>
+    <button class="pbtn" id="toggleNight"><span class="btn-icon">🌙</span>NIGHT</button>
+    <button class="pbtn" id="toggleJournal"><span class="btn-icon">📖</span>JOURNAL</button>
+    <button class="pbtn" id="audioModeBtn"><span class="btn-icon">🔊</span>AUDIO: CHAPEL</button>
+    <button class="pbtn" id="snapBtn"><span class="btn-icon">📷</span>SNAP</button>
+  </div>
+  <div class="youtube-audio" id="youtubeAudio" aria-hidden="true"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+/* =========================================================
+   PIXEL ART DRAW HELPERS
+   ========================================================= */
+function drawGrid(ctx, grid, palette, px){
+  ctx.imageSmoothingEnabled = false;
+  for(let y=0;y<grid.length;y++){
+    const row = grid[y];
+    for(let x=0;x<row.length;x++){
+      const c = row[x];
+      if(c==='.') continue;
+      ctx.fillStyle = palette[c];
+      ctx.fillRect(x*px, y*px, px, px);
+    }
+  }
+}
+
+/* ---- Bible (open book) 22 x 8 ---- */
+const biblePalette = {p:'#efe4c8', P:'#d8c8a0', r:'#b8232f', b:'#7a6a45'};
+const bibleGrid = [
+"..pppppppppppppppppp..",
+".ppppppppppppppppppp.p",
+"ppppppppppppppppppppp.",
+"pppppppppppRppppppppp.",
+"pppppppppppRppppppppp.",
+"ppppppppppppppppppppp.",
+".ppppppppppppppppppp.p",
+"..bbbbbbbbbbbbbbbbbb.."
+];
+// place red ribbon at column via replacing R below with actual accent using canvas directly instead
+
+/* ---- Cross (tall gold) 8 x 22 ---- */
+const crossPalette = {g:'#f0bc45', G:'#fff0a6'};
+const crossGrid = [
+"...gg...",
+"...Gg...",
+"...gg...",
+"...gg...",
+"gggggggg",
+"gGGGGGGg",
+"gggggggg",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg...",
+"...gg..."
+];
+
+/* ---- Flower 5x6 (rose + purple variants share shape) ---- */
+function flowerGrid(petal){
+  return [
+   ".p.p.",
+   "ppppp",
+   ".pcp.",
+   "..s..",
+   "..s..",
+   ".ss..",
+  ];
+}
+const flowerPaletteRose = {p:'#c9557a', c:'#f5cf6f', s:'#2f7a3d'};
+const flowerPalettePurple = {p:'#8f5fc9', c:'#f5cf6f', s:'#2f7a3d'};
+
+/* ---- Icon portrait (gold frame + saint bust) 17x20 ---- */
+const iconPalette = {g:'#e0b657', b:'#241609', f:'#f0c48a', r:'#f5f0e6', h:'#c9a04e'};
+const iconGrid = [
+"ggggggggggggggggg",
+"gbbbbbbbbbbbbbbbg",
+"gb..hhhhhhhhh..bg",
+"gb.hhhhhhhhhhh.bg",
+"gb.h..fffff..h.bg",
+"gb.h.fffffff.h.bg",
+"gb.h.fffffff.h.bg",
+"gb.h..fffff..h.bg",
+"gb.hh.rrrrr.hh.bg",
+"gb.hhrrrrrrrhh.bg",
+"gb.hhrrrrrrrhh.bg",
+"gbbbbbbbbbbbbbbbg",
+"ggggggggggggggggg"
+];
+
+/* ---- Garland strip (tiled) ---- */
+const garlandPalette = {g:'#2f7a3d', G:'#245c2f', r:'#b8232f'};
+const garlandUnit = ["gGgGgGgGg","g.r...r.g"];
+
+/* ---- Star ---- */
+const starPalette = {s:'#f5cf6f'};
+const starGrid = [".s.","sss",".s."];
+
+/* ---- Candle flame frames (6x8) - step flicker, 4 frames ---- */
+const flamePalette = {y:'#ffe28a', o:'#f5a623', r:'#c9412a'};
+const flameFrames = [
+ [".yy.", "yooy", "yooy", ".oo."],
+ [".oy.", "yooy", "oooy", ".yo."],
+ ["yy..", "yooy", "yoo.", ".oy."],
+ [".oy.", "oooy", "yooy", ".oo."],
+];
+
+/* ---- Bird sprite 2 frames ---- */
+const birdPalette = {b:'#141a2e'};
+const birdFrames = [
+ ["..b..b..","..bbbbb.",".bbbbbb."],
+ [".b.....b","..bbbbb.","..bbbb.."]
+];
+
+/* =========================================================
+   RENDER SETUP
+   ========================================================= */
+function renderCanvas(id, grid, palette, px){
+  const c = document.getElementById(id);
+  const ctx = c.getContext('2d');
+  c.width = grid[0].length*px;
+  c.height = grid.length*px;
+  ctx.clearRect(0,0,c.width,c.height);
+  drawGrid(ctx, grid, palette, px);
+}
+
+
+// bible with ribbon drawn manually
+(function(){
+  const c = document.getElementById('bibleCanvas');
+  const ctx = c.getContext('2d');
+  const px = 3;
+  c.width = 22*px; c.height=8*px;
+  drawGrid(ctx, bibleGrid, biblePalette, px);
+  // red ribbon
+  ctx.fillStyle = '#b8232f';
+  ctx.fillRect(11*px, 3*px, px, 6*px);
+})();
+
+/* =========================================================
+   STAINED GLASS WINDOWS (SVG)
+   ========================================================= */
+function windowSVG(){
+  return `
+  <svg viewBox="0 0 100 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#2ab7c9"/>
+        <stop offset="50%" stop-color="#e0b657"/>
+        <stop offset="100%" stop-color="#c9557a"/>
+      </linearGradient>
+    </defs>
+    <path d="M5 160 V60 A45 45 0 0 1 95 60 V160 Z" fill="#0b0f1c" stroke="#e0b657" stroke-width="5"/>
+    <path d="M12 160 V62 A38 38 0 0 1 88 62 V160 Z" fill="url(#glassGrad)" opacity="0.85"/>
+    <g stroke="#0b0f1c" stroke-width="3" opacity="0.7">
+      <line x1="50" y1="20" x2="50" y2="160"/>
+      <line x1="12" y1="90" x2="88" y2="90"/>
+      <line x1="12" y1="125" x2="88" y2="125"/>
+    </g>
+    <g fill="#f5cf6f" opacity="0.95">
+      <rect x="44" y="30" width="12" height="46"/>
+      <rect x="28" y="46" width="44" height="12"/>
+    </g>
+  </svg>`;
+}
+document.getElementById('winLeft').innerHTML = windowSVG();
+document.getElementById('winRight').innerHTML = windowSVG();
+
+/* =========================================================
+   PEWS (forced perspective, 3 rows each side)
+   ========================================================= */
+function buildPews(container){
+  container.innerHTML='';
+  const rows = [
+    {w:'100%', h:34, bottom:0},
+    {w:'78%', h:26, bottom:40},
+    {w:'58%', h:20, bottom:72},
+  ];
+  rows.forEach(r=>{
+    const d = document.createElement('div');
+    d.className='pew-row';
+    d.style.width = r.w;
+    d.style.height = r.h+'px';
+    d.style.bottom = r.bottom+'px';
+    container.appendChild(d);
+  });
+}
+buildPews(document.getElementById('pewsLeft'));
+buildPews(document.getElementById('pewsRight'));
+
+/* =========================================================
+   HOLY WATER FONT
+   ========================================================= */
+(function(){
+  const c = document.getElementById('fontCanvas');
+  const ctx = c.getContext('2d');
+  const px=5;
+  const palette = {s:'#6b7691', S:'#4d5670', g:'#e0b657'};
+  const grid = [
+   "..gg..",
+   "..gg..",
+   ".gggg.",
+   "..gg..",
+   "ssssss",
+   "SSSSSS",
+   "..ss..",
+   "..ss..",
+   "..ss..",
+   "sssssS",
+  ];
+  drawGrid(ctx, grid, palette, px);
+})();
+
+document.getElementById('holyFont').addEventListener('click', (e)=>{
+  burstHolyWater(e.currentTarget);
+  playHolyChime();
+});
+
+function burstHolyWater(originEl){
+  const rect = originEl.getBoundingClientRect();
+  for(let i=0;i<16;i++){
+    const p = document.createElement('div');
+    p.className='particle';
+    const startX = rect.left + rect.width/2 + (Math.random()*20-10);
+    const startY = rect.top + rect.height*0.25;
+    p.style.left = startX+'px';
+    p.style.top = startY+'px';
+    document.getElementById('chapel').appendChild(p);
+    const dx = (Math.random()*60-30);
+    const dur = 700 + Math.random()*500;
+    let frame=0;
+    const totalFrames = 8;
+    const iv = setInterval(()=>{
+      frame++;
+      p.style.transform = `translate(${dx*(frame/totalFrames)}px, ${-60*(frame/totalFrames)}px)`;
+      p.style.opacity = 1 - frame/totalFrames;
+      if(frame>=totalFrames){ clearInterval(iv); p.remove(); }
+    }, dur/totalFrames);
+  }
+}
+
+/* =========================================================
+   CANDLES
+   ========================================================= */
+const MAX_CANDLES = 8;
+let candleCount = 0;
+const candleOrder = [3,4,2,5,1,6,0,7]; // fill alternately outward from center
+const candleSlots = [];
+
+function buildCandleSlots(){
+  const row = document.getElementById('candlesRow');
+  row.innerHTML='';
+  for(let i=0;i<MAX_CANDLES;i++){
+    const slot = document.createElement('div');
+    slot.className='candle-slot';
+    const canvas = document.createElement('canvas');
+    canvas.width=26; canvas.height=50;
+    slot.appendChild(canvas);
+    row.appendChild(slot);
+    candleSlots.push({el:slot, canvas, lit:false, frame:0});
+  }
+}
+buildCandleSlots();
+
+const candlePalette = {i:'#efe4c8', I:'#d8c8a0', w:'#3d2718', g:'#e0b657', G:'#8a6420'};
+function candleBaseGrid(){
+  return [
+   "..w....",
+   ".iii...",
+   ".iii...",
+   "iiiii..",
+   "iiiiI..",
+   "iiiii..",
+   "iiiiI..",
+   "iiiii..",
+   "gggggg.",
+   "GgggggG",
+   "gggggg.",
+  ];
+}
+
+function drawCandle(slot){
+  const ctx = slot.canvas.getContext('2d');
+  const px=3;
+  const baseY = 15;
+  const flameY = 3;
+  ctx.clearRect(0,0,slot.canvas.width, slot.canvas.height);
+  const base = candleBaseGrid();
+  for(let y=0;y<base.length;y++){
+    for(let x=0;x<base[y].length;x++){
+      const ch = base[y][x];
+      if(ch==='.') continue;
+      ctx.fillStyle = candlePalette[ch];
+      ctx.fillRect(x*px, baseY + y*px, px, px);
+    }
+  }
+  if(slot.lit){
+    const flame = flameFrames[slot.frame % flameFrames.length];
+    // draw flame above candle top
+    for(let y=0;y<flame.length;y++){
+      for(let x=0;x<flame[y].length;x++){
+        const ch = flame[y][x];
+        if(ch==='.') continue;
+        ctx.fillStyle = flamePalette[ch];
+        ctx.fillRect((x+1)*px, flameY + y*px, px, px);
+      }
+    }
+  }
+}
+candleSlots.forEach(drawCandle);
+
+setInterval(()=>{
+  candleSlots.forEach(slot=>{
+    if(slot.lit){
+      slot.frame = (slot.frame+1)%flameFrames.length;
+      drawCandle(slot);
+    }
+  });
+}, 220);
+
+function updateCandleUI(){
+  document.getElementById('candleCount').textContent = candleCount+' / '+MAX_CANDLES;
+}
+
+document.getElementById('lightBtn').addEventListener('click', ()=>{
+  if(candleCount>=MAX_CANDLES) return;
+  const idx = candleOrder[candleCount];
+  candleSlots[idx].lit = true;
+  drawCandle(candleSlots[idx]);
+  candleCount++;
+  updateCandleUI();
+  playCandleSweep();
+});
+document.getElementById('snuffBtn').addEventListener('click', ()=>{
+  if(candleCount<=0) return;
+  candleCount--;
+  const idx = candleOrder[candleCount];
+  candleSlots[idx].lit = false;
+  drawCandle(candleSlots[idx]);
+  updateCandleUI();
+  playCandleSweep(true);
+});
+updateCandleUI();
+
+/* =========================================================
+   DECORATIONS
+   ========================================================= */
+function renderDecorCanvas(wrapId, grid, palette, px){
+  const wrap = document.getElementById(wrapId);
+  const canvas = wrap.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = grid[0].length*px;
+  canvas.height = grid.length*px;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawGrid(ctx, grid, palette, px);
+}
+renderDecorCanvas('decorCross', crossGrid, crossPalette, 3);
+renderDecorCanvas('decorIcon', iconGrid, iconPalette, 2);
+renderDecorCanvas('decorFlowerL', flowerGrid(), flowerPaletteRose, 3);
+renderDecorCanvas('decorFlowerR', flowerGrid(), flowerPalettePurple, 3);
+
+(function(){
+  const wrap = document.getElementById('decorGarland');
+  const canvas = wrap.querySelector('canvas');
+  const ctx = canvas.getContext('2d');
+  const px=4; const repeats = 12;
+  canvas.width = garlandUnit[0].length*px*repeats/3;
+  canvas.height = garlandUnit.length*px;
+  for(let r=0;r<repeats;r++){
+    for(let y=0;y<garlandUnit.length;y++){
+      for(let x=0;x<garlandUnit[y].length;x++){
+        const ch = garlandUnit[y][x];
+        if(ch==='.') continue;
+        ctx.fillStyle = garlandPalette[ch];
+        ctx.fillRect((r*3+x)*px, y*px, px, px);
+      }
+    }
+  }
+})();
+
+function buildStars(){
+  const wrap = document.getElementById('starsWrap');
+  wrap.innerHTML='';
+  for(let i=0;i<5;i++){
+    const c = document.createElement('canvas');
+    c.className='star';
+    c.width=9; c.height=9;
+    c.style.left = (8 + i*21)+'%';
+    c.style.animationDelay = (i*0.3)+'s';
+    const ctx = c.getContext('2d');
+    drawGrid(ctx, starGrid, starPalette, 3);
+    wrap.appendChild(c);
+  }
+}
+buildStars();
+
+function toggleDecor(btnId, elId, extraId){
+  const btn = document.getElementById(btnId);
+  const el = document.getElementById(elId);
+  btn.addEventListener('click', ()=>{
+    const showing = el.style.display !== 'none';
+    el.style.display = showing ? 'none' : 'block';
+    if(extraId) document.getElementById(extraId).style.display = showing ? 'none':'block';
+    btn.classList.toggle('active', !showing);
+  });
+}
+toggleDecor('toggleCross','decorCross');
+toggleDecor('toggleIcon','decorIcon');
+toggleDecor('toggleGarland','decorGarland','starsWrap');
+
+document.getElementById('toggleFlowers').addEventListener('click', (e)=>{
+  const l = document.getElementById('decorFlowerL');
+  const r = document.getElementById('decorFlowerR');
+  const showing = l.style.display !== 'none';
+  l.style.display = showing?'none':'block';
+  r.style.display = showing?'none':'block';
+  e.currentTarget.classList.toggle('active', !showing);
+});
+
+/* =========================================================
+   DAY / NIGHT TOGGLE
+   ========================================================= */
+document.getElementById('toggleNight').addEventListener('click', (e)=>{
+  document.getElementById('nightOverlay').classList.toggle('on');
+  e.currentTarget.classList.toggle('active');
+});
+
+/* =========================================================
+   GOLD DUST + BIRDS
+   ========================================================= */
+function buildDust(){
+  const layer = document.getElementById('dustLayer');
+  const frag = document.createDocumentFragment();
+  for(let i=0;i<20;i++){
+    const d = document.createElement('div');
+    d.className='dust';
+    d.style.left = (Math.random()*100)+'%';
+    d.style.bottom = '-10px';
+    d.style.animationDuration = (8+Math.random()*10)+'s';
+    d.style.animationDelay = (Math.random()*10)+'s';
+    d.style.animationTimingFunction = 'steps(20)';
+    frag.appendChild(d);
+  }
+  layer.appendChild(frag);
+}
+buildDust();
+
+function spawnBird(){
+  const bird = document.createElement('canvas');
+  bird.width=16; bird.height=12;
+  bird.className='bird';
+  const ctx = bird.getContext('2d');
+  let frame=0;
+  drawGrid(ctx, birdFrames[0], birdPalette, 2);
+  bird.style.top = (10+Math.random()*20)+'%';
+  bird.style.animationDuration = (9+Math.random()*6)+'s';
+  document.getElementById('scene').appendChild(bird);
+  const flap = setInterval(()=>{
+    frame = (frame+1)%2;
+    ctx.clearRect(0,0,16,12);
+    drawGrid(ctx, birdFrames[frame], birdPalette, 2);
+  }, 260);
+  setTimeout(()=>{ clearInterval(flap); bird.remove(); }, 15000);
+}
+setInterval(()=>{ if(Math.random()<0.5) spawnBird(); }, 9000);
+
+/* =========================================================
+   BIBLE VERSES (typewriter, day-indexed)
+   ========================================================= */
+const verses = [
+  "\"The Lord is my shepherd; I shall not want.\" — Psalm 23:1",
+  "\"Be still, and know that I am God.\" — Psalm 46:10",
+  "\"I can do all things through Him who strengthens me.\" — Phil 4:13",
+  "\"Cast all your anxiety on Him because He cares for you.\" — 1 Peter 5:7",
+  "\"For God so loved the world...\" — John 3:16",
+  "\"Trust in the Lord with all your heart.\" — Proverbs 3:5",
+  "\"This is the day the Lord has made; let us rejoice.\" — Psalm 118:24",
+];
+function typewriter(el, text, speed){
+  el.textContent='';
+  let i=0;
+  const iv = setInterval(()=>{
+    el.textContent += text[i];
+    i++;
+    if(i>=text.length) clearInterval(iv);
+  }, speed);
+}
+const dayIdx = new Date().getDay();
+typewriter(document.getElementById('verseText'), verses[dayIdx], 32);
+document.getElementById('verseBox').addEventListener('click', function(){
+  this.style.display='none';
+});
+
+/* =========================================================
+   PRAYER JOURNAL
+   ========================================================= */
+const PRAYER_STORAGE_KEY = 'pixelChapelPrayers';
+let prayers = loadPrayers();
+document.getElementById('toggleJournal').addEventListener('click', (e)=>{
+  const panel = document.getElementById('journalPanel');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none':'block';
+  e.currentTarget.classList.toggle('active', !showing);
+});
+function loadPrayers(){
+  try{
+    const saved = localStorage.getItem(PRAYER_STORAGE_KEY);
+    if(!saved) return [];
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed.filter(p=>typeof p === 'string') : [];
+  }catch(e){
+    return [];
+  }
+}
+function savePrayers(){
+  localStorage.setItem(PRAYER_STORAGE_KEY, JSON.stringify(prayers));
+}
+function renderPrayers(){
+  const list = document.getElementById('prayerList');
+  list.innerHTML='';
+  prayers.slice(-3).reverse().forEach(p=>{
+    const d = document.createElement('div');
+    d.className='prayer-item';
+    d.textContent = p;
+    list.appendChild(d);
+  });
+}
+document.getElementById('journalSave').addEventListener('click', ()=>{
+  const input = document.getElementById('journalInput');
+  const val = input.value.trim();
+  if(!val) return;
+  prayers.push(val);
+  savePrayers();
+  input.value='';
+  renderPrayers();
+});
+document.getElementById('journalClear').addEventListener('click', ()=>{
+  prayers = [];
+  localStorage.removeItem(PRAYER_STORAGE_KEY);
+  renderPrayers();
+});
+renderPrayers();
+
+/* =========================================================
+   SNAPSHOT / POLAROID
+   ========================================================= */
+document.getElementById('snapBtn').addEventListener('click', ()=>{
+  playCameraSnap();
+  html2canvas(document.getElementById('scene'), {backgroundColor:'#0b0f1c'}).then(canvas=>{
+    const dataUrl = canvas.toDataURL('image/png');
+    showPolaroid(dataUrl);
+  });
+});
+
+document.getElementById('audioModeBtn').addEventListener('click', cycleAudioMode);
+
+function showPolaroid(dataUrl){
+  const overlay = document.createElement('div');
+  overlay.className='polaroid-overlay';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString();
+  overlay.innerHTML = `
+    <div class="polaroid">
+      <img src="${dataUrl}">
+      <div class="stamp">${dateStr}</div>
+    </div>
+    <div class="polaroid-actions">
+      <button class="pbtn" id="closePolaroid">CLOSE</button>
+      <a class="pbtn" id="savePolaroid" style="text-decoration:none;display:inline-block;" download="pixel-chapel-${dateStr.replace(/\//g,'-')}.png" href="${dataUrl}">↓ SAVE</a>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#closePolaroid').addEventListener('click', ()=> overlay.remove());
+}
+
+/* =========================================================
+   AUDIO (Web Audio API synthesis)
+   ========================================================= */
+let audioCtx;
+let choirNodes = [];
+let bellTimer;
+let soundMode = 'chapel';
+let youtubeFrame;
+const YOUTUBE_VIDEO_ID = '4wZmRQcIDME';
+
+function initAudio(){
+  ensureAudioContext();
+  setAudioMode('chapel');
+}
+
+function ensureAudioContext(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function setAudioMode(mode){
+  soundMode = mode;
+  if(mode === 'chapel'){
+    stopYouTubeAudio();
+    ensureAudioContext();
+    startChoirDrone();
+    ringBell();
+    scheduleBell();
+  }else if(mode === 'track'){
+    stopChapelAudio();
+    startYouTubeAudio();
+  }else{
+    stopChapelAudio();
+    stopYouTubeAudio();
+  }
+  updateAudioModeUI();
+}
+
+function updateAudioModeUI(){
+  const btn = document.getElementById('audioModeBtn');
+  if(!btn) return;
+  const labels = {
+    chapel: '<span class="btn-icon">🔊</span>AUDIO: CHAPEL',
+    track: '<span class="btn-icon">🎵</span>AUDIO: TRACK',
+    muted: '<span class="btn-icon">🔇</span>AUDIO: OFF'
+  };
+  btn.innerHTML = labels[soundMode];
+  btn.classList.toggle('active', soundMode !== 'chapel');
+}
+
+function cycleAudioMode(){
+  const next = soundMode === 'chapel' ? 'track' : soundMode === 'track' ? 'muted' : 'chapel';
+  setAudioMode(next);
+}
+
+function stopChapelAudio(){
+  if(bellTimer){
+    clearTimeout(bellTimer);
+    bellTimer = null;
+  }
+  choirNodes.forEach(node=>{
+    try{ node.stop(); }catch(e){}
+    try{ node.disconnect(); }catch(e){}
+  });
+  choirNodes = [];
+}
+
+function ensureYouTubeAudio(){
+  if(youtubeFrame) return;
+  const holder = document.getElementById('youtubeAudio');
+  youtubeFrame = document.createElement('iframe');
+  youtubeFrame.width = '1';
+  youtubeFrame.height = '1';
+  youtubeFrame.title = 'Pixel Chapel background track';
+  youtubeFrame.allow = 'autoplay; encrypted-media';
+  youtubeFrame.src = `https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?enablejsapi=1&playsinline=1&loop=1&playlist=${YOUTUBE_VIDEO_ID}&controls=0&disablekb=1&modestbranding=1`;
+  youtubeFrame.addEventListener('load', ()=>{
+    if(soundMode === 'track') sendYouTubeCommand('playVideo');
+  });
+  holder.appendChild(youtubeFrame);
+}
+
+function sendYouTubeCommand(func){
+  if(!youtubeFrame || !youtubeFrame.contentWindow) return;
+  youtubeFrame.contentWindow.postMessage(JSON.stringify({
+    event: 'command',
+    func,
+    args: []
+  }), '*');
+}
+
+function startYouTubeAudio(){
+  ensureYouTubeAudio();
+  setTimeout(()=>{
+    if(soundMode === 'track') sendYouTubeCommand('playVideo');
+  }, 700);
+}
+
+function stopYouTubeAudio(){
+  sendYouTubeCommand('pauseVideo');
+}
+
+function startChoirDrone(){
+  if(soundMode !== 'chapel' || choirNodes.length) return;
+  const freqs = [130.81, 164.81, 196.00, 261.63]; // C3 E3 G3 C4
+  const master = audioCtx.createGain();
+  master.gain.value = 0.035;
+  master.connect(audioCtx.destination);
+  freqs.forEach((f, i)=>{
+    const osc = audioCtx.createOscillator();
+    osc.type='sine';
+    osc.frequency.value = f;
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.8;
+    const lfo = audioCtx.createOscillator();
+    lfo.frequency.value = 0.12 + i*0.03;
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 3;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start();
+    lfo.start();
+    choirNodes.push(osc, lfo);
+  });
+}
+
+function ringBell(){
+  if(soundMode !== 'chapel' || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  const partials = [1, 2.01, 3.0, 4.2];
+  const baseFreq = 220;
+  const master = audioCtx.createGain();
+  master.gain.value = 0.0001;
+  master.connect(audioCtx.destination);
+  master.gain.linearRampToValueAtTime(0.18, now+0.02);
+  master.gain.exponentialRampToValueAtTime(0.0001, now+3.2);
+  partials.forEach((p, i)=>{
+    const osc = audioCtx.createOscillator();
+    osc.type='sine';
+    osc.frequency.value = baseFreq*p;
+    const g = audioCtx.createGain();
+    g.gain.value = 1/(i+1);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(now);
+    osc.stop(now+3.3);
+  });
+}
+
+function scheduleBell(){
+  if(soundMode !== 'chapel') return;
+  if(bellTimer) clearTimeout(bellTimer);
+  const delay = 45000 + Math.random()*45000;
+  bellTimer = setTimeout(()=>{
+    bellTimer = null;
+    ringBell();
+    scheduleBell();
+  }, delay);
+}
+
+function playCandleSweep(reverse){
+  if(soundMode !== 'chapel' || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  osc.type='sine';
+  const g = audioCtx.createGain();
+  g.gain.value=0.0001;
+  osc.connect(g); g.connect(audioCtx.destination);
+  const start = reverse?80:300;
+  const end = reverse?300:80;
+  osc.frequency.setValueAtTime(start, now);
+  osc.frequency.exponentialRampToValueAtTime(end, now+0.4);
+  g.gain.linearRampToValueAtTime(0.12, now+0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001, now+0.45);
+  osc.start(now);
+  osc.stop(now+0.5);
+}
+
+function playHolyChime(){
+  if(soundMode !== 'chapel' || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  [660, 880, 990].forEach((f,i)=>{
+    const osc = audioCtx.createOscillator();
+    osc.type='sine';
+    osc.frequency.value=f;
+    const g = audioCtx.createGain();
+    g.gain.value=0.0001;
+    osc.connect(g); g.connect(audioCtx.destination);
+    const t = now + i*0.06;
+    g.gain.linearRampToValueAtTime(0.05, t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.6);
+    osc.start(t);
+    osc.stop(t+0.65);
+  });
+}
+
+function playCameraSnap(){
+  if(soundMode === 'muted') return;
+  ensureAudioContext();
+  const now = audioCtx.currentTime;
+  const master = audioCtx.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.linearRampToValueAtTime(0.16, now+0.006);
+  master.gain.exponentialRampToValueAtTime(0.0001, now+0.22);
+  master.connect(audioCtx.destination);
+
+  [850, 420].forEach((freq, i)=>{
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const t = now + i*0.045;
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(0.45, t+0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t+0.055);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(t);
+    osc.stop(t+0.07);
+  });
+
+  const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.08, audioCtx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * (1 - i/data.length);
+  const noise = audioCtx.createBufferSource();
+  const noiseGain = audioCtx.createGain();
+  noise.buffer = noiseBuffer;
+  noiseGain.gain.setValueAtTime(0.18, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.0001, now+0.08);
+  noise.connect(noiseGain);
+  noiseGain.connect(master);
+  noise.start(now);
+  noise.stop(now+0.09);
+}
+
+/* =========================================================
+   ENTRY
+   ========================================================= */
+document.getElementById('entry').addEventListener('click', function(){
+  this.style.display='none';
+  document.getElementById('chapel').classList.remove('hidden');
+  initAudio();
+}, {once:true});
+</script>
+</body>
+</html>
