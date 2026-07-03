@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pixel Chapel</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
@@ -242,6 +243,78 @@ button{font-family:'Press Start 2P',monospace;}
 .polaroid img{display:block;width:340px;image-rendering:pixelated;border:1px solid #888;}
 .polaroid .stamp{margin-top:10px;font-size:9px;color:#333;text-align:center;}
 .polaroid-actions{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:10px;}
+
+@media (max-width: 760px){
+  #entry .title{font-size:18px;line-height:2;}
+  #entry .sub{font-size:9px;margin-top:22px;}
+
+  .window{top:8%;width:20%;max-width:96px;}
+  .window-left{left:4%;}
+  .window-right{right:4%;}
+
+  .pews{height:28%;width:43%;}
+  .altar-wrap{bottom:17%;width:min(82vw, 380px);}
+  .altar{height:104px;}
+  .jesus-wrap{top:-170px;width:148px;height:148px;}
+  .candles-row{top:-50px;gap:3px;}
+  .candle-slot{width:22px;}
+  .bible-wrap{top:-52px;width:58px;height:22px;}
+  .decor-cross{top:-232px;width:42px;height:108px;}
+  .decor-icon{left:8px;bottom:10px;width:28px;height:34px;}
+  .decor-flower.left{left:-20px;}
+  .decor-flower.right{right:-20px;}
+  .holy-font{left:6%;bottom:15%;width:52px;height:82px;}
+
+  .verse-box{
+    top:10px;width:calc(100vw - 24px);padding:10px 12px;
+    font-size:8px;line-height:1.8;max-height:30vh;overflow:auto;
+  }
+  .verse-box .label{font-size:8px;margin-bottom:6px;}
+  .verse-box .dismiss-hint{font-size:6px;}
+
+  .ui-panel{
+    flex-wrap:nowrap;justify-content:flex-start;gap:6px;
+    overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
+    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  .ui-panel::-webkit-scrollbar{display:none;}
+  .pbtn{flex:0 0 auto;padding:7px 8px;font-size:7px;white-space:nowrap;}
+  .pbtn .btn-icon{margin-right:4px;}
+  .count-badge{flex:0 0 auto;font-size:7px;white-space:nowrap;padding:0 2px;}
+
+  .journal-panel{
+    left:10px;right:10px;bottom:64px;width:auto;max-height:48vh;
+    overflow:auto;padding:10px;
+  }
+  .journal-panel h3{font-size:9px;}
+  .journal-panel textarea{height:70px;font-size:7px;}
+  .prayer-item{font-size:7px;}
+
+  .polaroid{padding:10px 10px 34px;transform:rotate(-2deg);}
+  .polaroid img{width:min(340px, calc(100vw - 56px));}
+  .polaroid-actions{bottom:24px;gap:8px;}
+}
+
+@media (max-width: 420px){
+  .altar-wrap{bottom:19%;width:88vw;}
+  .altar{height:96px;}
+  .jesus-wrap{top:-156px;width:132px;height:132px;}
+  .candles-row{top:-46px;transform:scale(0.9);transform-origin:center bottom;}
+  .bible-wrap{top:-48px;}
+  .decor-cross{top:-206px;width:36px;height:92px;}
+  .decor-garland{left:-2%;right:-2%;}
+  .stars-wrap{top:-34px;}
+  .holy-font{width:44px;height:70px;}
+  .verse-box{font-size:7px;line-height:1.7;}
+}
+
+@media (max-height: 560px){
+  .window{top:3%;width:13%;}
+  .altar-wrap{bottom:16%;transform:translateX(-50%) scale(0.82);transform-origin:center bottom;}
+  .holy-font{bottom:16%;transform:scale(0.8);transform-origin:left bottom;}
+  .verse-box{max-height:22vh;}
+  .journal-panel{max-height:42vh;}
+}
 </style>
 </head>
 <body>
