@@ -206,14 +206,19 @@ button{font-family:'Press Start 2P',monospace;}
   padding:10px;background:linear-gradient(rgba(11,15,28,0) 0%, rgba(11,15,28,0.92) 30%);
 }
 .pbtn{
-  background:var(--navy);color:var(--gold);border:3px solid var(--gold);padding:0 10px;
-  min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  font-size:9px;line-height:1;cursor:pointer;box-shadow:0 3px 0 #000;
+  background:var(--navy);color:var(--gold);border:3px solid var(--gold);padding:0 12px;
+  height:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-size:9px;line-height:1;text-align:center;vertical-align:middle;cursor:pointer;box-shadow:0 3px 0 #000;
+  overflow:hidden;
+}
+.pbtn-label{
+  display:inline-block;
+  line-height:1;
 }
 .pbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #000;}
 .pbtn.active{background:var(--gold);color:var(--navy-deep);}
 .pbtn.small{font-size:14px;padding:6px 10px;}
-.count-badge{min-height:34px;display:inline-flex;align-items:center;font-size:9px;line-height:1;color:var(--ivory);}
+.count-badge{min-height:40px;display:inline-flex;align-items:center;font-size:9px;line-height:1.35;color:var(--ivory);}
 .youtube-audio{
   position:fixed;left:-2px;bottom:-2px;width:1px;height:1px;
   opacity:0;pointer-events:none;overflow:hidden;
@@ -237,14 +242,24 @@ button{font-family:'Press Start 2P',monospace;}
 .confession-message{display:none;margin-top:8px;font-size:8px;line-height:1.7;color:var(--gold-bright);}
 
 /* ---------- POLAROID ---------- */
-.polaroid-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:center;justify-content:center;}
+.polaroid-overlay{
+  position:fixed;inset:0;background:rgba(6,4,10,0.96);z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
 .polaroid{
   background:var(--ivory);padding:14px 14px 40px;transform:rotate(-4deg);
   box-shadow:0 10px 30px rgba(0,0,0,0.6);
 }
 .polaroid img{display:block;width:340px;image-rendering:pixelated;border:1px solid #888;}
 .polaroid .stamp{margin-top:10px;font-size:9px;color:#333;text-align:center;}
-.polaroid-actions{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:10px;}
+.polaroid-actions{
+  position:relative;
+  margin-top:24px;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:min(360px, calc(100vw - 32px));
+  z-index:1;
+}
+.polaroid-actions .pbtn{flex:1 1 0;max-width:160px;text-decoration:none;}
 
 @media (max-width: 760px){
   #entry .title{font-size:18px;line-height:2;}
@@ -289,8 +304,9 @@ button{font-family:'Press Start 2P',monospace;}
     box-shadow:inset 0 0 64px 16px rgba(80,30,60,0.08);
   }
   .ui-panel::-webkit-scrollbar{display:none;}
-  .pbtn{flex:0 0 auto;min-height:38px;padding:0 9px;font-size:7px;white-space:nowrap;}
-  .count-badge{flex:0 0 auto;min-height:38px;font-size:7px;white-space:nowrap;padding:0 2px;}
+  .pbtn{flex:0 0 auto;height:42px;min-height:42px;padding:0 10px;font-size:7px;line-height:1;white-space:nowrap;}
+  .pbtn-label{transform:none;}
+  .count-badge{flex:0 0 auto;min-height:42px;font-size:7px;line-height:1.35;white-space:nowrap;padding:0 2px;}
 
   .journal-panel{
     left:10px;right:10px;bottom:64px;width:auto;max-height:48vh;
@@ -302,7 +318,8 @@ button{font-family:'Press Start 2P',monospace;}
 
   .polaroid{padding:10px 10px 34px;transform:rotate(-2deg);}
   .polaroid img{width:min(340px, calc(100vw - 56px));}
-  .polaroid-actions{bottom:24px;gap:8px;}
+  .polaroid-actions{margin-top:18px;gap:8px;width:calc(100vw - 32px);}
+  .polaroid-actions .pbtn{flex:1 1 0;max-width:150px;}
 }
 
 @media (max-width: 420px){
@@ -385,31 +402,31 @@ button{font-family:'Press Start 2P',monospace;}
   <div class="journal-panel" id="journalPanel" style="display:none;">
     <h3>PRAYER JOURNAL</h3>
     <textarea id="journalInput" placeholder="Write a prayer..."></textarea>
-    <button class="pbtn save-btn" id="journalSave">SAVE</button>
-    <button class="pbtn clear-btn" id="journalClear">CLEAR ALL</button>
+    <button class="pbtn save-btn" id="journalSave"><span class="pbtn-label">SAVE</span></button>
+    <button class="pbtn clear-btn" id="journalClear"><span class="pbtn-label">CLEAR ALL</span></button>
     <div id="prayerList"></div>
   </div>
 
   <div class="journal-panel" id="confessionPanel" style="display:none;">
     <h3>CONFESSION OF SIN</h3>
     <textarea id="confessionInput" placeholder="Confess your sin..."></textarea>
-    <button class="pbtn save-btn" id="confessionSubmit">SUBMIT</button>
+    <button class="pbtn save-btn" id="confessionSubmit"><span class="pbtn-label">SUBMIT</span></button>
     <div class="confession-message" id="confessionMessage">Jesus will forgive your sins</div>
   </div>
 
-  <div class="ui-panel">
-    <button class="pbtn" id="lightBtn">LIGHT</button>
-    <button class="pbtn" id="snuffBtn">SNUFF</button>
+  <div class="ui-panel" id="uiPanel">
+    <button class="pbtn" id="lightBtn"><span class="pbtn-label">LIGHT</span></button>
+    <button class="pbtn" id="snuffBtn"><span class="pbtn-label">SNUFF</span></button>
     <span class="count-badge" id="candleCount">0 / 8</span>
-    <button class="pbtn" id="toggleFlowers">FLOWERS</button>
-    <button class="pbtn" id="toggleCross">CROSS</button>
-    <button class="pbtn" id="toggleIcon">ICON</button>
-    <button class="pbtn" id="toggleGarland">GARLAND</button>
-    <button class="pbtn" id="toggleNight">NIGHT</button>
-    <button class="pbtn" id="toggleJournal">JOURNAL</button>
-    <button class="pbtn" id="toggleConfession">CONFESSION</button>
-    <button class="pbtn" id="audioModeBtn">AUDIO: CHAPEL</button>
-    <button class="pbtn" id="snapBtn">SNAP</button>
+    <button class="pbtn" id="toggleFlowers"><span class="pbtn-label">FLOWERS</span></button>
+    <button class="pbtn" id="toggleCross"><span class="pbtn-label">CROSS</span></button>
+    <button class="pbtn" id="toggleIcon"><span class="pbtn-label">ICON</span></button>
+    <button class="pbtn" id="toggleGarland"><span class="pbtn-label">GARLAND</span></button>
+    <button class="pbtn" id="toggleNight"><span class="pbtn-label">NIGHT</span></button>
+    <button class="pbtn" id="toggleJournal"><span class="pbtn-label">JOURNAL</span></button>
+    <button class="pbtn" id="toggleConfession"><span class="pbtn-label">CONFESSION</span></button>
+    <button class="pbtn" id="audioModeBtn"><span class="pbtn-label">AUDIO: CHAPEL</span></button>
+    <button class="pbtn" id="snapBtn"><span class="pbtn-label">SNAP</span></button>
   </div>
   <div class="youtube-audio" id="youtubeAudio" aria-hidden="true"></div>
 </div>
@@ -1021,6 +1038,19 @@ document.getElementById('snapBtn').addEventListener('click', ()=>{
 document.getElementById('audioModeBtn').addEventListener('click', cycleAudioMode);
 
 function showPolaroid(dataUrl){
+  // Hide the bottom UI panel (and any open side panels) while the
+  // polaroid is open so nothing behind it can show through or be
+  // accidentally tapped/clicked on mobile or desktop.
+  const uiPanel = document.getElementById('uiPanel');
+  const journalPanel = document.getElementById('journalPanel');
+  const confessionPanel = document.getElementById('confessionPanel');
+  const prevUiPanelDisplay = uiPanel.style.display;
+  const prevJournalDisplay = journalPanel.style.display;
+  const prevConfessionDisplay = confessionPanel.style.display;
+  uiPanel.style.display = 'none';
+  journalPanel.style.display = 'none';
+  confessionPanel.style.display = 'none';
+
   const overlay = document.createElement('div');
   overlay.className='polaroid-overlay';
   const now = new Date();
@@ -1031,12 +1061,24 @@ function showPolaroid(dataUrl){
       <div class="stamp">${dateStr}</div>
     </div>
     <div class="polaroid-actions">
-      <button class="pbtn" id="closePolaroid">CLOSE</button>
-      <a class="pbtn" id="savePolaroid" style="text-decoration:none;display:inline-block;" download="pixel-chapel-${dateStr.replace(/\//g,'-')}.png" href="${dataUrl}">↓ SAVE</a>
+      <button class="pbtn" id="closePolaroid"><span class="pbtn-label">CLOSE</span></button>
+      <a class="pbtn" id="savePolaroid" download="pixel-chapel-${dateStr.replace(/\//g,'-')}.png" href="${dataUrl}"><span class="pbtn-label">↓ SAVE</span></a>
     </div>
   `;
   document.body.appendChild(overlay);
-  overlay.querySelector('#closePolaroid').addEventListener('click', ()=> overlay.remove());
+
+  function restoreUI(){
+    uiPanel.style.display = prevUiPanelDisplay;
+    journalPanel.style.display = prevJournalDisplay;
+    confessionPanel.style.display = prevConfessionDisplay;
+    overlay.remove();
+  }
+
+  overlay.querySelector('#closePolaroid').addEventListener('click', restoreUI);
+  overlay.querySelector('#savePolaroid').addEventListener('click', ()=>{
+    // give the download a moment to start before restoring the UI
+    setTimeout(restoreUI, 150);
+  });
 }
 
 /* =========================================================
@@ -1087,7 +1129,7 @@ function updateAudioModeUI(){
     track: 'AUDIO: TRACK',
     muted: 'AUDIO: OFF'
   };
-  btn.textContent = labels[soundMode];
+  btn.innerHTML = `<span class="pbtn-label">${labels[soundMode]}</span>`;
   btn.classList.toggle('active', soundMode !== 'chapel');
 }
 
