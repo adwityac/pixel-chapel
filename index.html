@@ -22,6 +22,7 @@
 
 *{box-sizing:border-box; image-rendering:pixelated; image-rendering:crisp-edges;}
 html,body{margin:0;padding:0;height:100%;background:#12182c;overflow:hidden;font-family:'Press Start 2P',monospace;color:var(--ivory);}
+body{min-height:100svh;}
 canvas{image-rendering:pixelated;}
 button{font-family:'Press Start 2P',monospace;}
 
@@ -40,7 +41,7 @@ button{font-family:'Press Start 2P',monospace;}
 @keyframes blink{50%{opacity:0;}}
 
 /* ---------- CHAPEL ROOT ---------- */
-#chapel{position:fixed;inset:0;background:var(--navy-deep);overflow:hidden;}
+#chapel{position:fixed;inset:0;background:var(--navy-deep);overflow:hidden;min-height:100svh;}
 #chapel.hidden{display:none;}
 
 .scene{
@@ -170,7 +171,7 @@ button{font-family:'Press Start 2P',monospace;}
 @keyframes starshimmer{0%,100%{opacity:0.4;transform:scale(0.85);}50%{opacity:1;transform:scale(1.15);}}
 
 /* holy water font */
-.holy-font{position:absolute;left:14%;bottom:12%;width:70px;height:110px;cursor:pointer;z-index:19;}
+.holy-font{position:absolute;left:9%;bottom:25%;width:70px;height:110px;cursor:pointer;z-index:19;}
 .holy-font canvas{width:100%;height:100%;}
 .holy-font:hover{filter:brightness(1.2);}
 .particle{position:absolute;width:4px;height:4px;background:#bfe9ff;box-shadow:0 0 4px #bfe9ff;pointer-events:none;z-index:25;}
@@ -205,14 +206,14 @@ button{font-family:'Press Start 2P',monospace;}
   padding:10px;background:linear-gradient(rgba(11,15,28,0) 0%, rgba(11,15,28,0.92) 30%);
 }
 .pbtn{
-  background:var(--navy);color:var(--gold);border:3px solid var(--gold);padding:8px 10px;
-  font-size:9px;cursor:pointer;box-shadow:0 3px 0 #000;
+  background:var(--navy);color:var(--gold);border:3px solid var(--gold);padding:0 10px;
+  min-height:34px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-size:9px;line-height:1;cursor:pointer;box-shadow:0 3px 0 #000;
 }
-.pbtn .btn-icon{display:inline-block;transform:translateY(-2px);margin-right:6px;}
 .pbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #000;}
 .pbtn.active{background:var(--gold);color:var(--navy-deep);}
 .pbtn.small{font-size:14px;padding:6px 10px;}
-.count-badge{font-size:9px;color:var(--ivory);}
+.count-badge{min-height:34px;display:inline-flex;align-items:center;font-size:9px;line-height:1;color:var(--ivory);}
 .youtube-audio{
   position:fixed;left:-2px;bottom:-2px;width:1px;height:1px;
   opacity:0;pointer-events:none;overflow:hidden;
@@ -233,6 +234,7 @@ button{font-family:'Press Start 2P',monospace;}
 .journal-panel .clear-btn{margin-top:6px;width:100%;color:var(--glass-rose);border-color:var(--glass-rose);}
 .prayer-item{font-size:8px;border-top:1px dashed rgba(217,169,78,0.4);padding:6px 0;line-height:1.6;color:#cfd7ea;}
 .journal-note{font-size:7px;color:#8b93ab;margin-top:6px;line-height:1.6;}
+.confession-message{display:none;margin-top:8px;font-size:8px;line-height:1.7;color:var(--gold-bright);}
 
 /* ---------- POLAROID ---------- */
 .polaroid-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:center;justify-content:center;}
@@ -259,11 +261,11 @@ button{font-family:'Press Start 2P',monospace;}
   .candles-row{top:-50px;gap:3px;}
   .candle-slot{width:22px;}
   .bible-wrap{top:-52px;width:58px;height:22px;}
-  .decor-cross{top:-232px;width:42px;height:108px;}
+  .decor-cross{top:-260px;width:42px;height:108px;}
   .decor-icon{left:8px;bottom:10px;width:28px;height:34px;}
   .decor-flower.left{left:-20px;}
   .decor-flower.right{right:-20px;}
-  .holy-font{left:6%;bottom:15%;width:52px;height:82px;}
+  .holy-font{left:4%;bottom:15%;width:56px;height:82px;z-index:22;}
 
   .verse-box{
     top:10px;width:calc(100vw - 24px);padding:10px 12px;
@@ -275,7 +277,9 @@ button{font-family:'Press Start 2P',monospace;}
   .ui-panel{
     flex-wrap:nowrap;justify-content:flex-start;gap:6px;
     overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
-    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    padding:10px 12px 24px;
+    padding:10px 12px calc(14px + max(env(safe-area-inset-bottom), 10px));
+    scroll-padding:0 12px;
   }
   .crt-overlay{
     background:repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0px, rgba(0,0,0,0.12) 1px, transparent 2px, transparent 4px);
@@ -285,9 +289,8 @@ button{font-family:'Press Start 2P',monospace;}
     box-shadow:inset 0 0 64px 16px rgba(80,30,60,0.08);
   }
   .ui-panel::-webkit-scrollbar{display:none;}
-  .pbtn{flex:0 0 auto;padding:7px 8px;font-size:7px;white-space:nowrap;}
-  .pbtn .btn-icon{margin-right:4px;}
-  .count-badge{flex:0 0 auto;font-size:7px;white-space:nowrap;padding:0 2px;}
+  .pbtn{flex:0 0 auto;min-height:38px;padding:0 9px;font-size:7px;white-space:nowrap;}
+  .count-badge{flex:0 0 auto;min-height:38px;font-size:7px;white-space:nowrap;padding:0 2px;}
 
   .journal-panel{
     left:10px;right:10px;bottom:64px;width:auto;max-height:48vh;
@@ -308,10 +311,10 @@ button{font-family:'Press Start 2P',monospace;}
   .jesus-wrap{top:-156px;width:132px;height:132px;}
   .candles-row{top:-46px;transform:scale(0.9);transform-origin:center bottom;}
   .bible-wrap{top:-48px;}
-  .decor-cross{top:-206px;width:36px;height:92px;}
+  .decor-cross{top:-236px;width:36px;height:92px;}
   .decor-garland{left:-2%;right:-2%;}
   .stars-wrap{top:-34px;}
-  .holy-font{width:44px;height:70px;}
+  .holy-font{left:3%;width:50px;height:70px;}
   .verse-box{font-size:7px;line-height:1.7;}
 }
 
@@ -387,18 +390,26 @@ button{font-family:'Press Start 2P',monospace;}
     <div id="prayerList"></div>
   </div>
 
+  <div class="journal-panel" id="confessionPanel" style="display:none;">
+    <h3>CONFESSION OF SIN</h3>
+    <textarea id="confessionInput" placeholder="Confess your sin..."></textarea>
+    <button class="pbtn save-btn" id="confessionSubmit">SUBMIT</button>
+    <div class="confession-message" id="confessionMessage">Jesus will forgive your sins</div>
+  </div>
+
   <div class="ui-panel">
-    <button class="pbtn" id="lightBtn"><span class="btn-icon">🕯</span>LIGHT</button>
+    <button class="pbtn" id="lightBtn">LIGHT</button>
     <button class="pbtn" id="snuffBtn">SNUFF</button>
     <span class="count-badge" id="candleCount">0 / 8</span>
-    <button class="pbtn" id="toggleFlowers"><span class="btn-icon">🌸</span>FLOWERS</button>
-    <button class="pbtn" id="toggleCross"><span class="btn-icon">✝</span>CROSS</button>
-    <button class="pbtn" id="toggleIcon"><span class="btn-icon">🖼</span>ICON</button>
-    <button class="pbtn" id="toggleGarland"><span class="btn-icon">⭐</span>GARLAND</button>
-    <button class="pbtn" id="toggleNight"><span class="btn-icon">🌙</span>NIGHT</button>
-    <button class="pbtn" id="toggleJournal"><span class="btn-icon">📖</span>JOURNAL</button>
-    <button class="pbtn" id="audioModeBtn"><span class="btn-icon">🔊</span>AUDIO: CHAPEL</button>
-    <button class="pbtn" id="snapBtn"><span class="btn-icon">📷</span>SNAP</button>
+    <button class="pbtn" id="toggleFlowers">FLOWERS</button>
+    <button class="pbtn" id="toggleCross">CROSS</button>
+    <button class="pbtn" id="toggleIcon">ICON</button>
+    <button class="pbtn" id="toggleGarland">GARLAND</button>
+    <button class="pbtn" id="toggleNight">NIGHT</button>
+    <button class="pbtn" id="toggleJournal">JOURNAL</button>
+    <button class="pbtn" id="toggleConfession">CONFESSION</button>
+    <button class="pbtn" id="audioModeBtn">AUDIO: CHAPEL</button>
+    <button class="pbtn" id="snapBtn">SNAP</button>
   </div>
   <div class="youtube-audio" id="youtubeAudio" aria-hidden="true"></div>
 </div>
@@ -601,8 +612,8 @@ buildPews(document.getElementById('pewsRight'));
   const c = document.getElementById('fontCanvas');
   const ctx = c.getContext('2d');
   const px=5;
-  const palette = {s:'#6b7691', S:'#4d5670', g:'#e0b657'};
-  const grid = [
+  const palette = {s:'#7d89a4', S:'#4d5670', w:'#bfe9ff', g:'#e0b657'};
+  const desktopGrid = [
    "..gg..",
    "..gg..",
    ".gggg.",
@@ -614,7 +625,31 @@ buildPews(document.getElementById('pewsRight'));
    "..ss..",
    "sssssS",
   ];
-  drawGrid(ctx, grid, palette, px);
+  const mobileGrid = [
+   "....gg....",
+   "....gg....",
+   "...gggg...",
+   "....gg....",
+   "..ssssss..",
+   ".swwwwws..",
+   "swwwwwwsS.",
+   ".ssssssS..",
+   "...ssS....",
+   "...ssS....",
+   "...ssS....",
+   "..ssssS...",
+   ".ssssssS..",
+   "SSSSSSSS..",
+  ];
+  function renderHolyFont(){
+    const grid = window.matchMedia('(max-width: 760px)').matches ? mobileGrid : desktopGrid;
+    c.width = grid[0].length*px;
+    c.height = grid.length*px;
+    ctx.clearRect(0,0,c.width,c.height);
+    drawGrid(ctx, grid, palette, px);
+  }
+  renderHolyFont();
+  window.addEventListener('resize', renderHolyFont);
 })();
 
 document.getElementById('holyFont').addEventListener('click', (e)=>{
@@ -907,6 +942,9 @@ document.getElementById('toggleJournal').addEventListener('click', (e)=>{
   const showing = panel.style.display !== 'none';
   panel.style.display = showing ? 'none':'block';
   e.currentTarget.classList.toggle('active', !showing);
+  if(showing) return;
+  document.getElementById('confessionPanel').style.display = 'none';
+  document.getElementById('toggleConfession').classList.remove('active');
 });
 function loadPrayers(){
   try{
@@ -946,6 +984,28 @@ document.getElementById('journalClear').addEventListener('click', ()=>{
   renderPrayers();
 });
 renderPrayers();
+
+/* =========================================================
+   CONFESSION OF SIN
+   ========================================================= */
+document.getElementById('toggleConfession').addEventListener('click', (e)=>{
+  const panel = document.getElementById('confessionPanel');
+  const showing = panel.style.display !== 'none';
+  panel.style.display = showing ? 'none':'block';
+  e.currentTarget.classList.toggle('active', !showing);
+  if(showing) return;
+  document.getElementById('journalPanel').style.display = 'none';
+  document.getElementById('toggleJournal').classList.remove('active');
+});
+document.getElementById('confessionInput').addEventListener('input', ()=>{
+  document.getElementById('confessionMessage').style.display = 'none';
+});
+document.getElementById('confessionSubmit').addEventListener('click', ()=>{
+  const input = document.getElementById('confessionInput');
+  if(!input.value.trim()) return;
+  input.value = '';
+  document.getElementById('confessionMessage').style.display = 'block';
+});
 
 /* =========================================================
    SNAPSHOT / POLAROID
@@ -1023,11 +1083,11 @@ function updateAudioModeUI(){
   const btn = document.getElementById('audioModeBtn');
   if(!btn) return;
   const labels = {
-    chapel: '<span class="btn-icon">🔊</span>AUDIO: CHAPEL',
-    track: '<span class="btn-icon">🎵</span>AUDIO: TRACK',
-    muted: '<span class="btn-icon">🔇</span>AUDIO: OFF'
+    chapel: 'AUDIO: CHAPEL',
+    track: 'AUDIO: TRACK',
+    muted: 'AUDIO: OFF'
   };
-  btn.innerHTML = labels[soundMode];
+  btn.textContent = labels[soundMode];
   btn.classList.toggle('active', soundMode !== 'chapel');
 }
 
